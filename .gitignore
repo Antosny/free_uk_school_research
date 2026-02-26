@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Data files
+backend/data/raw/
+backend/db/schools.db
+
+# Node
+node_modules/
+.next/
+
+# OS
+.DS_Store
+note~
