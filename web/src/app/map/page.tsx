@@ -170,12 +170,8 @@ function MapPageContent() {
 
   return (
     <div className="flex h-[calc(100vh-57px)] flex-col md:flex-row">
-      {/* Sidebar */}
-      <div
-        className={`${
-          showList ? "h-1/2 md:h-full" : "h-auto md:h-full"
-        } flex w-full flex-col overflow-hidden border-b border-gray-200 md:w-96 md:border-b-0 md:border-r`}
-      >
+      {/* Left side: search + map */}
+      <div className="flex flex-1 flex-col">
         <div className="space-y-3 border-b border-gray-200 p-4">
           <SearchBar />
           <Filters
@@ -198,6 +194,23 @@ function MapPageContent() {
             </button>
           </div>
         </div>
+        <div className="flex-1">
+          <SchoolMap
+            center={center}
+            schools={schools}
+            catchmentCircle={catchmentCircle}
+            onSchoolClick={handleSchoolClick}
+            homeLocation={home ? { lat: home.latitude, lng: home.longitude, postcode: home.postcode } : undefined}
+          />
+        </div>
+      </div>
+
+      {/* Right side: school list */}
+      <div
+        className={`${
+          showList ? "h-1/2 md:h-full" : "h-auto md:h-full"
+        } flex w-full flex-col overflow-hidden border-t border-gray-200 md:w-96 md:border-l md:border-t-0`}
+      >
         <div
           className={`flex-1 overflow-y-auto ${showList ? "" : "hidden md:block"}`}
         >
@@ -207,17 +220,6 @@ function MapPageContent() {
             ))}
           </div>
         </div>
-      </div>
-
-      {/* Map */}
-      <div className="flex-1">
-        <SchoolMap
-          center={center}
-          schools={schools}
-          catchmentCircle={catchmentCircle}
-          onSchoolClick={handleSchoolClick}
-          homeLocation={home ? { lat: home.latitude, lng: home.longitude, postcode: home.postcode } : undefined}
-        />
       </div>
     </div>
   );
