@@ -6,7 +6,7 @@ venv/
 
 # Data files
 backend/data/raw/
-backend/db/schools.db
+# backend/db/schools.db
 
 # Node
 node_modules/
