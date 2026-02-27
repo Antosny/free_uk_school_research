@@ -5,8 +5,10 @@ interface FiltersProps {
   setPhase: (v: string) => void;
   rating: string;
   setRating: (v: string) => void;
-  radius: number;
-  setRadius: (v: number) => void;
+  showGrammar: boolean;
+  setShowGrammar: (v: boolean) => void;
+  showIndependent: boolean;
+  setShowIndependent: (v: boolean) => void;
 }
 
 export default function Filters({
@@ -14,11 +16,13 @@ export default function Filters({
   setPhase,
   rating,
   setRating,
-  radius,
-  setRadius,
+  showGrammar,
+  setShowGrammar,
+  showIndependent,
+  setShowIndependent,
 }: FiltersProps) {
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex flex-wrap items-center gap-3">
       <select
         value={phase}
         onChange={(e) => setPhase(e.target.value)}
@@ -43,17 +47,25 @@ export default function Filters({
         <option value="Inadequate">Inadequate</option>
       </select>
 
-      <select
-        value={radius}
-        onChange={(e) => setRadius(Number(e.target.value))}
-        className="rounded border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
-      >
-        <option value={1}>1 km</option>
-        <option value={2}>2 km</option>
-        <option value={5}>5 km</option>
-        <option value={10}>10 km</option>
-        <option value={20}>20 km</option>
-      </select>
+      <label className="flex items-center gap-1.5 text-sm text-gray-700">
+        <input
+          type="checkbox"
+          checked={showGrammar}
+          onChange={(e) => setShowGrammar(e.target.checked)}
+          className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+        />
+        Grammar
+      </label>
+
+      <label className="flex items-center gap-1.5 text-sm text-gray-700">
+        <input
+          type="checkbox"
+          checked={showIndependent}
+          onChange={(e) => setShowIndependent(e.target.checked)}
+          className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+        />
+        Independent
+      </label>
     </div>
   );
 }

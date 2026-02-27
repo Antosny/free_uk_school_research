@@ -23,13 +23,14 @@ app.add_middleware(
 DB_PATH = os.path.join(os.path.dirname(__file__), "..", "db", "schools.db")
 
 COLUMNS = [
-    "urn", "name", "type", "phase", "age_low", "age_high",
+    "urn", "name", "type", "phase", "admissions_policy", "age_low", "age_high",
     "num_pupils", "postcode", "latitude", "longitude",
     "ofsted_rating", "ofsted_date",
     "ks2_reading", "ks2_maths", "ks4_attainment8", "ks4_progress8",
     "ks4_dest_education", "ks4_dest_apprenticeships", "ks4_dest_employment",
     "ks5_dest_higher_education", "ks5_dest_further_education",
     "ks5_dest_apprenticeships", "ks5_dest_employment",
+    "ks5_dest_russell_group", "ks5_dest_oxbridge", "ks5_dest_top_third",
     "fsm_percent",
     "ethnicity_white", "ethnicity_mixed", "ethnicity_asian",
     "ethnicity_black", "ethnicity_other",
@@ -118,6 +119,48 @@ def list_schools(
 
     results.sort(key=lambda x: x["distance_km"])
     return results[:limit]
+
+
+@app.get("/api/schools/bounds")
+def list_schools_by_bounds(
+    lat_min: float = Query(..., description="South latitude"),
+    lat_max: float = Query(..., description="North latitude"),
+    lng_min: float = Query(..., description="West longitude"),
+    lng_max: float = Query(..., description="East longitude"),
+    phase: Optional[str] = Query(None, description="Filter by phase"),
+    rating: Optional[str] = Query(None, description="Filter by Ofsted rating"),
+    limit: int = Query(1501, description="Max results (fetch 1501 to detect overflow)"),
+):
+    """Find schools within a bounding box (map viewport)."""
+    conn = get_db()
+    query = """
+        SELECT * FROM schools
+        WHERE latitude BETWEEN ? AND ?
+          AND longitude BETWEEN ? AND ?
+    """
+    params: list = [lat_min, lat_max, lng_min, lng_max]
+
+    if phase:
+        query += " AND phase = ?"
+        params.append(phase)
+
+    if rating:
+        query += " AND ofsted_rating = ?"
+        params.append(rating)
+
+    query += " LIMIT ?"
+    params.append(limit)
+
+    rows = conn.execute(query, params).fetchall()
+    conn.close()
+
+    results = []
+    for row in rows:
+        d = row_to_dict(row)
+        if d["latitude"] is not None and d["longitude"] is not None:
+            results.append(d)
+
+    return {"total": len(results), "schools": results[:1500]}
 
 
 @app.get("/api/schools/{urn}")

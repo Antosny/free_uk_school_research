@@ -230,6 +230,45 @@ def download_ks5_destinations() -> str:
         return os.path.join(RAW_DIR, "ks5_destinations.csv")
 
 
+def download_ks5_destination_he() -> str:
+    """Download 16-18 progression to higher education data (Russell Group, Oxbridge).
+
+    This data comes from the DfE school performance tables download service.
+    """
+    ensure_dir()
+    csv_path = os.path.join(RAW_DIR, "ks5_destination_he.csv")
+    if os.path.exists(csv_path):
+        print(f"  Already exists: {csv_path}")
+        return csv_path
+
+    session = requests.Session()
+    session.headers.update(HEADERS)
+
+    base = "https://www.find-school-performance-data.service.gov.uk"
+    # Establish session cookies
+    session.get(f"{base}/download-data", timeout=30)
+
+    # Download via the performance tables download wizard
+    resp = session.get(
+        f"{base}/download-data",
+        params={
+            "download": "true",
+            "regions": "0",
+            "filters": "KS5DESTINATIONHE",
+            "fileformat": "csv",
+            "year": "2022-2023",
+            "meta": "false",
+        },
+        timeout=120,
+    )
+    resp.raise_for_status()
+
+    with open(csv_path, "wb") as f:
+        f.write(resp.content)
+    print(f"  Saved to {csv_path} ({len(resp.content):,} bytes)")
+    return csv_path
+
+
 def download_school_characteristics() -> str:
     """Download school pupils characteristics (FSM, ethnicity) from DfE."""
     try:
@@ -258,6 +297,8 @@ def download_all():
     download_ks4_destinations()
     print("\nDownloading KS5 destination measures...")
     download_ks5_destinations()
+    print("\nDownloading KS5 HE destination measures (Russell Group, Oxbridge)...")
+    download_ks5_destination_he()
     print("\nDownloading school characteristics (FSM, ethnicity)...")
     download_school_characteristics()
     print("\nDone.")

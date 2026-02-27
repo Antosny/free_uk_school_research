@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import {
   fetchSchool,
@@ -23,6 +23,7 @@ const SchoolMap = dynamic(() => import("@/components/SchoolMap"), {
 
 export default function SchoolDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const urn = Number(params.urn);
   const [school, setSchool] = useState<School | null>(null);
   const [nearby, setNearby] = useState<School[]>([]);
@@ -77,7 +78,11 @@ export default function SchoolDetailPage() {
     school.ks5_dest_further_education != null ||
     school.ks5_dest_apprenticeships != null ||
     school.ks5_dest_employment != null;
-  const hasDestinations = hasKs4Dest || hasKs5Dest;
+  const hasKs5HeDest =
+    school.ks5_dest_russell_group != null ||
+    school.ks5_dest_oxbridge != null ||
+    school.ks5_dest_top_third != null;
+  const hasDestinations = hasKs4Dest || hasKs5Dest || hasKs5HeDest;
 
   const hasEthnicity =
     school.ethnicity_white != null ||
@@ -141,6 +146,23 @@ export default function SchoolDetailPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
+      {/* Back to map */}
+      <button
+        onClick={() => {
+          if (school.latitude && school.longitude) {
+            router.push(`/map?lat=${school.latitude}&lng=${school.longitude}`);
+          } else {
+            router.push("/map");
+          }
+        }}
+        className="mb-4 inline-flex items-center gap-1 text-sm text-green-700 hover:text-green-900"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+          <path fillRule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clipRule="evenodd" />
+        </svg>
+        Back to map
+      </button>
+
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">{school.name}</h1>
@@ -409,6 +431,40 @@ export default function SchoolDetailPage() {
                   </div>
                 );
               })()}
+
+              {hasKs5HeDest && (
+                <div className="mt-3 rounded-md bg-indigo-50 p-3">
+                  <p className="mb-2 text-xs font-medium text-indigo-700">
+                    Higher Education Breakdown (16-18 leavers)
+                  </p>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    {school.ks5_dest_oxbridge != null && (
+                      <div>
+                        <p className="text-lg font-bold text-indigo-800">
+                          {school.ks5_dest_oxbridge}%
+                        </p>
+                        <p className="text-xs text-indigo-600">Oxbridge</p>
+                      </div>
+                    )}
+                    {school.ks5_dest_russell_group != null && (
+                      <div>
+                        <p className="text-lg font-bold text-indigo-700">
+                          {school.ks5_dest_russell_group}%
+                        </p>
+                        <p className="text-xs text-indigo-600">Russell Group</p>
+                      </div>
+                    )}
+                    {school.ks5_dest_top_third != null && (
+                      <div>
+                        <p className="text-lg font-bold text-indigo-600">
+                          {school.ks5_dest_top_third}%
+                        </p>
+                        <p className="text-xs text-indigo-600">Top Third</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <p className="mt-2 text-xs text-gray-400">
                 % of leavers in sustained destinations (DfE destination measures).

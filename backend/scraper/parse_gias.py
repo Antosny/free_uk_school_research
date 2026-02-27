@@ -19,6 +19,8 @@ COL_MAP = {
     "Postcode": "postcode",
     "Easting": "easting",
     "Northing": "northing",
+    "AdmissionsPolicy (name)": "admissions_policy",
+    "EstablishmentStatus (name)": "status",
 }
 
 # British National Grid (EPSG:27700) → WGS84 (EPSG:4326)
@@ -61,6 +63,12 @@ def parse() -> pd.DataFrame:
     if "name" not in df.columns:
         raise ValueError("EstablishmentName column not found in GIAS data.")
 
+    # Filter out closed schools
+    if "status" in df.columns:
+        before = len(df)
+        df = df[df["status"].isin(["Open", "Open, but proposed to close"])]
+        print(f"  Filtered out {before - len(df)} closed/proposed schools, {len(df)} remaining.")
+
     # Convert Easting/Northing to lat/lng if no direct lat/lng columns
     if "latitude" not in df.columns and "easting" in df.columns:
         df["easting"] = pd.to_numeric(df["easting"], errors="coerce")
@@ -73,6 +81,7 @@ def parse() -> pd.DataFrame:
     keep = [
         "urn", "name", "type", "phase", "age_low", "age_high",
         "num_pupils", "postcode", "latitude", "longitude",
+        "admissions_policy",
     ]
     keep = [c for c in keep if c in df.columns]
     df = df[keep].copy()

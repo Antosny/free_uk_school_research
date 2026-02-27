@@ -12,6 +12,7 @@ export interface School {
   name: string;
   type: string | null;
   phase: string | null;
+  admissions_policy: string | null;
   age_low: number | null;
   age_high: number | null;
   num_pupils: number | null;
@@ -31,6 +32,9 @@ export interface School {
   ks5_dest_further_education: number | null;
   ks5_dest_apprenticeships: number | null;
   ks5_dest_employment: number | null;
+  ks5_dest_russell_group: number | null;
+  ks5_dest_oxbridge: number | null;
+  ks5_dest_top_third: number | null;
   fsm_percent: number | null;
   ethnicity_white: number | null;
   ethnicity_mixed: number | null;
@@ -89,6 +93,30 @@ export async function fetchNearbySchools(
   if (rating) params.set("rating", rating);
 
   const res = await fetch(`${API_BASE}/api/schools?${params}`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export interface BoundsResult {
+  total: number;
+  schools: School[];
+}
+
+export async function fetchSchoolsByBounds(
+  bounds: { south: number; north: number; west: number; east: number },
+  phase?: string,
+  rating?: string,
+): Promise<BoundsResult> {
+  const params = new URLSearchParams({
+    lat_min: bounds.south.toString(),
+    lat_max: bounds.north.toString(),
+    lng_min: bounds.west.toString(),
+    lng_max: bounds.east.toString(),
+  });
+  if (phase) params.set("phase", phase);
+  if (rating) params.set("rating", rating);
+
+  const res = await fetch(`${API_BASE}/api/schools/bounds?${params}`);
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   return res.json();
 }

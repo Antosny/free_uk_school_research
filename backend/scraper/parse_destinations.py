@@ -165,6 +165,69 @@ def parse_ks5_destinations() -> pd.DataFrame:
     return result
 
 
+def parse_ks5_destination_he() -> pd.DataFrame:
+    """Parse KS5 HE destination measures (Russell Group, Oxbridge, top third).
+
+    Source: DfE school performance tables download (ks5_destination_he.csv).
+    Values are strings like '38%', 'SUPP', 'NA' — we parse to numeric or NaN.
+
+    Columns: ks5_dest_russell_group, ks5_dest_oxbridge, ks5_dest_top_third
+    """
+    path = os.path.join(RAW_DIR, "ks5_destination_he.csv")
+    if not os.path.exists(path):
+        print("  KS5 HE destination data not found, skipping.")
+        return pd.DataFrame()
+
+    print("  Loading KS5 HE destination CSV...")
+    df = pd.read_csv(path, low_memory=False)
+    print(f"  Loaded {len(df)} rows, {len(df.columns)} columns")
+
+    if "URN" not in df.columns:
+        print("  KS5 HE destinations: URN column not found, skipping.")
+        print(f"  Available columns: {list(df.columns[:20])}")
+        return pd.DataFrame()
+
+    # Map source columns to our column names
+    col_map = {}
+    if "ALL_RUSSELL" in df.columns:
+        col_map["ALL_RUSSELL"] = "ks5_dest_russell_group"
+    if "ALL_OXBRIDGE" in df.columns:
+        col_map["ALL_OXBRIDGE"] = "ks5_dest_oxbridge"
+    if "ALL_TOP3RD" in df.columns:
+        col_map["ALL_TOP3RD"] = "ks5_dest_top_third"
+
+    if not col_map:
+        print("  KS5 HE destinations: No Russell/Oxbridge columns found.")
+        print(f"  Available columns: {list(df.columns)}")
+        return pd.DataFrame()
+
+    print(f"  Mapped columns: {col_map}")
+
+    keep = ["URN"] + list(col_map.keys())
+    result = df[keep].rename(columns={"URN": "urn", **col_map}).copy()
+
+    result["urn"] = pd.to_numeric(result["urn"], errors="coerce")
+    result = result.dropna(subset=["urn"])
+    result["urn"] = result["urn"].astype(int)
+
+    # Parse percentage strings like '38%' -> 38.0, 'SUPP'/'NA' -> NaN
+    for col in col_map.values():
+        result[col] = (
+            result[col]
+            .astype(str)
+            .str.replace("%", "", regex=False)
+            .apply(pd.to_numeric, errors="coerce")
+        )
+
+    result = result.drop_duplicates(subset=["urn"], keep="first")
+    result = result.set_index("urn")
+
+    non_null = result.notna().sum()
+    print(f"  KS5 HE destinations: {len(result)} school records parsed.")
+    print(f"  Non-null counts: {dict(non_null)}")
+    return result
+
+
 if __name__ == "__main__":
     print("KS4 Destinations:")
     ks4 = parse_ks4_destinations()
@@ -172,3 +235,6 @@ if __name__ == "__main__":
     print(f"\nKS5 Destinations:")
     ks5 = parse_ks5_destinations()
     print(ks5.head())
+    print(f"\nKS5 HE Destinations (Russell Group, Oxbridge):")
+    ks5_he = parse_ks5_destination_he()
+    print(ks5_he.head())

@@ -8,7 +8,7 @@ import pandas as pd
 from scraper.parse_gias import parse as parse_gias
 from scraper.parse_ofsted import parse as parse_ofsted
 from scraper.parse_results import parse_ks2, parse_ks4
-from scraper.parse_destinations import parse_ks4_destinations, parse_ks5_destinations
+from scraper.parse_destinations import parse_ks4_destinations, parse_ks5_destinations, parse_ks5_destination_he
 from scraper.parse_characteristics import parse_school_characteristics
 from scraper.parse_catchment import parse as parse_catchment
 from db.models import SCHEMA_SQL, COLUMNS, CATCHMENT_SCHEMA_SQL
@@ -40,6 +40,9 @@ def build():
     print("Parsing KS5 destination measures...")
     ks5_dest = parse_ks5_destinations()
 
+    print("Parsing KS5 HE destination measures (Russell Group, Oxbridge)...")
+    ks5_dest_he = parse_ks5_destination_he()
+
     print("Parsing school characteristics (FSM, ethnicity)...")
     characteristics = parse_school_characteristics()
 
@@ -61,6 +64,9 @@ def build():
 
     if not ks5_dest.empty:
         merged = merged.join(ks5_dest, how="left")
+
+    if not ks5_dest_he.empty:
+        merged = merged.join(ks5_dest_he, how="left")
 
     if not characteristics.empty:
         merged = merged.join(characteristics, how="left")

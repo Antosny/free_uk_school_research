@@ -36,6 +36,20 @@ export default function SchoolCard({ school }: { school: School }) {
           </span>
         )}
       </div>
+      {(school.ks5_dest_russell_group != null || school.ks5_dest_oxbridge != null) && (
+        <div className="mt-2 flex gap-3 border-t border-gray-100 pt-2 text-xs">
+          {school.ks5_dest_oxbridge != null && (
+            <span className="text-indigo-700">
+              <span className="font-semibold">{school.ks5_dest_oxbridge}%</span> Oxbridge
+            </span>
+          )}
+          {school.ks5_dest_russell_group != null && (
+            <span className="text-indigo-600">
+              <span className="font-semibold">{school.ks5_dest_russell_group}%</span> Russell Group
+            </span>
+          )}
+        </div>
+      )}
     </Link>
   );
 }

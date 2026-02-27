@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS schools (
     name TEXT NOT NULL,
     type TEXT,
     phase TEXT,
+    admissions_policy TEXT,
     age_low INTEGER,
     age_high INTEGER,
     num_pupils INTEGER,
@@ -25,6 +26,9 @@ CREATE TABLE IF NOT EXISTS schools (
     ks5_dest_further_education REAL,
     ks5_dest_apprenticeships REAL,
     ks5_dest_employment REAL,
+    ks5_dest_russell_group REAL,
+    ks5_dest_oxbridge REAL,
+    ks5_dest_top_third REAL,
     fsm_percent REAL,
     ethnicity_white REAL,
     ethnicity_mixed REAL,
@@ -67,13 +71,14 @@ CREATE INDEX IF NOT EXISTS idx_catchment_urn ON catchment(urn);
 """
 
 COLUMNS = [
-    "urn", "name", "type", "phase", "age_low", "age_high",
+    "urn", "name", "type", "phase", "admissions_policy", "age_low", "age_high",
     "num_pupils", "postcode", "latitude", "longitude",
     "ofsted_rating", "ofsted_date",
     "ks2_reading", "ks2_maths", "ks4_attainment8", "ks4_progress8",
     "ks4_dest_education", "ks4_dest_apprenticeships", "ks4_dest_employment",
     "ks5_dest_higher_education", "ks5_dest_further_education",
     "ks5_dest_apprenticeships", "ks5_dest_employment",
+    "ks5_dest_russell_group", "ks5_dest_oxbridge", "ks5_dest_top_third",
     "fsm_percent",
     "ethnicity_white", "ethnicity_mixed", "ethnicity_asian",
     "ethnicity_black", "ethnicity_other",
